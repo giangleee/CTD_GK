@@ -282,6 +282,9 @@ void printToken(Token *token) {
   case KW_DO: printf("KW_DO\n"); break;
   case KW_FOR: printf("KW_FOR\n"); break;
   case KW_TO: printf("KW_TO\n"); break;
+  case KW_SWITCH: printf("KW_SWITCH\n"); break;
+  case KW_CASE: printf("KW_CASE\n"); break;
+  case KW_DEFAULT: printf("KW_DEFAULT\n"); break;
 
   case SB_SEMICOLON: printf("SB_SEMICOLON\n"); break;
   case SB_COLON: printf("SB_COLON\n"); break;

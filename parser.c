@@ -401,6 +401,15 @@ void compileStatement(void) {
   case KW_FOR:
     compileForSt();
     break;
+  case KW_SWITCH:
+    compileSwitchSt();
+    break;
+  case KW_CASE:
+    compileCaseSt();
+    break;
+  case KW_DEFAULT:
+    compileDefaultSt();
+    break;
     // EmptySt needs to check FOLLOW tokens
   case SB_SEMICOLON:
   case KW_END:
@@ -510,6 +519,36 @@ void compileForSt(void) {
 
   eat(KW_DO);
   compileStatement();
+}
+
+void compileSwitchSt(void) {
+  assert("Parsing a Switch statement ....");
+  eat(KW_SWITCH);
+  compileExpression();
+  eat(KW_BEGIN);
+  compileCaseSt();
+  assert("Switch statement parsed ...");
+}
+
+void compileCaseSt(void) {
+  assert("parsing a Case statement ....");
+  eat(KW_CASE);
+  compileConstant();
+  eat(SB_COLON);
+  compileStatements();
+  compileStatement();
+
+  assert("Case statement parsed ...");
+}
+
+void compileDefaultSt(void) {
+  assert("parsing a Default statement ....");
+  eat(KW_DEFAULT);
+  eat(SB_COLON);
+  compileStatement();
+  eat(KW_END);
+  eat(SB_SEMICOLON);
+  assert("Default statement parsed ...");
 }
 
 void compileArgument(Object* param) {
@@ -670,6 +709,9 @@ void compileExpression3(void) {
   case KW_END:
   case KW_ELSE:
   case KW_THEN:
+  case KW_BEGIN:
+  case KW_CASE:
+  case KW_DEFAULT:
     break;
   default:
     error(ERR_INVALID_EXPRESSION, lookAhead->lineNo, lookAhead->colNo);
@@ -725,6 +767,9 @@ void compileTerm2(void) {
   case KW_END:
   case KW_ELSE:
   case KW_THEN:
+  case KW_BEGIN:
+  case KW_CASE:
+  case KW_DEFAULT:
     break;
   default:
     error(ERR_INVALID_TERM, lookAhead->lineNo, lookAhead->colNo);
