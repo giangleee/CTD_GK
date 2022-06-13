@@ -701,6 +701,12 @@ void compileTerm2(void) {
     checkIntType(type);
     compileTerm2();
     break;
+  case SB_POWER:
+    eat(SB_POWER);
+    type = compileTerm();
+    checkIntType(type);
+    compileExpression3();
+    break;
     // check the FOLLOW set
   case SB_PLUS:
   case SB_MINUS:
