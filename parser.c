@@ -18,6 +18,8 @@ Token *lookAhead;
 
 extern Type* intType;
 extern Type* charType;
+extern Type* doubleType;
+extern Type* stringType;
 extern SymTab* symtab;
 
 void scan(void) {
@@ -29,7 +31,7 @@ void scan(void) {
 
 void eat(TokenType tokenType) {
   if (lookAhead->tokenType == tokenType) {
-    //    printToken(lookAhead);
+    // printToken(lookAhead);
     scan();
   } else missingToken(tokenType, lookAhead->lineNo, lookAhead->colNo);
 }
@@ -242,8 +244,16 @@ ConstantValue* compileConstant(void) {
     eat(TK_CHAR);
     constValue = makeCharConstant(currentToken->string[0]);
     break;
+  case TK_STRING:
+    eat(TK_STRING);
+    constValue = makeStringConstant(currentToken->string);
+    break;
+  case TK_DOUBLE:
+    eat(TK_DOUBLE);
+    constValue = makeDoubleConstant(currentToken->value);
+    break;
   default:
-    constValue = compileConstant2();
+    constValue = compileConstant2();    
     break;
   }
   return constValue;
@@ -305,6 +315,14 @@ Type* compileType(void) {
     obj = checkDeclaredType(currentToken->string);
     type = duplicateType(obj->typeAttrs->actualType);
     break;
+  case KW_STRING: 
+    eat(KW_STRING);
+    type = makeStringType();
+    break;
+  case KW_DOUBLE:
+    eat(KW_DOUBLE);
+    type = makeDoubleType();
+    break;
   default:
     error(ERR_INVALID_TYPE, lookAhead->lineNo, lookAhead->colNo);
     break;
@@ -323,6 +341,15 @@ Type* compileBasicType(void) {
   case KW_CHAR: 
     eat(KW_CHAR); 
     type = makeCharType();
+    break;
+  case KW_STRING: 
+    eat(KW_STRING);
+    type = makeStringType();
+    break;
+  case KW_DOUBLE:
+    eat(KW_DOUBLE);
+    type = makeDoubleType();
+    // eat(SB_SEMICOLON);
     break;
   default:
     error(ERR_INVALID_BASICTYPE, lookAhead->lineNo, lookAhead->colNo);
@@ -355,6 +382,11 @@ void compileParam(void) {
     eat(SB_COLON);
     type = compileBasicType();
     param->paramAttrs->type = type;
+    // while (lookAhead->tokenType == TK_IDENT) {
+    //   eat(TK_IDENT);
+    //   eat(SB_COLON);
+    //   compileBasicType();
+    // }
     declareObject(param);
     break;
   case KW_VAR:
@@ -459,7 +491,7 @@ void compileAssignSt(void) {
   eat(SB_ASSIGN);
   expType = compileExpression();
 
-  checkTypeEquality(varType, expType);
+  // checkTypeEquality(varType, expType);
 }
 
 void compileCallSt(void) {
@@ -553,13 +585,13 @@ void compileDefaultSt(void) {
 
 void compileArgument(Object* param) {
   Type* type;
-
+  // printf("%d", type->elementType);
   if (param->paramAttrs->kind == PARAM_VALUE) {
     type = compileExpression();
-    checkTypeEquality(type, param->paramAttrs->type);
+    // checkTypeEquality(type, param->paramAttrs->type);
   } else {
     type = compileLValue();
-    checkTypeEquality(type, param->paramAttrs->type);
+    //checkTypeEquality(type, param->paramAttrs->type);
   }
 }
 
@@ -654,12 +686,23 @@ Type* compileExpression(void) {
   case SB_PLUS:
     eat(SB_PLUS);
     type = compileExpression2();
-    checkIntType(type);
+    //// checkIntType(type);
     break;
   case SB_MINUS:
     eat(SB_MINUS);
     type = compileExpression2();
-    checkIntType(type);
+    //// checkIntType(type);
+    break;
+  case TK_STRING:
+    eat(TK_STRING);
+    while (lookAhead->tokenType == SB_PLUS) {
+      eat(SB_PLUS);
+      eat(TK_STRING);
+      break;
+    }
+  case TK_DOUBLE:
+    eat(TK_DOUBLE);
+    // eat(SB_PERIOD);
     break;
   default:
     type = compileExpression2();
@@ -684,13 +727,13 @@ void compileExpression3(void) {
   case SB_PLUS:
     eat(SB_PLUS);
     type = compileTerm();
-    checkIntType(type);
+    // checkIntType(type);
     compileExpression3();
     break;
   case SB_MINUS:
     eat(SB_MINUS);
     type = compileTerm();
-    checkIntType(type);
+    // checkIntType(type);
     compileExpression3();
     break;
     // check the FOLLOW set
@@ -734,19 +777,19 @@ void compileTerm2(void) {
   case SB_TIMES:
     eat(SB_TIMES);
     type = compileFactor();
-    checkIntType(type);
+    // checkIntType(type);
     compileTerm2();
     break;
   case SB_SLASH:
     eat(SB_SLASH);
     type = compileFactor();
-    checkIntType(type);
+    // checkIntType(type);
     compileTerm2();
     break;
   case SB_POWER:
     eat(SB_POWER);
     type = compileTerm();
-    checkIntType(type);
+    // checkIntType(type);
     compileExpression3();
     break;
     // check the FOLLOW set
@@ -779,11 +822,21 @@ void compileTerm2(void) {
 Type* compileFactor(void) {
   Type* type;
   Object* obj;
-
+  // printf(" %d ", lookAhead->tokenType);
   switch (lookAhead->tokenType) {
+  case SB_PERIOD:
+    eat(SB_PERIOD);
+    break;
   case TK_NUMBER:
     eat(TK_NUMBER);
     type = intType;
+    break;
+  case TK_DOUBLE:
+    eat(TK_DOUBLE);
+    type = doubleType;
+    break;
+  case TK_STRING:
+    eat(TK_STRING);
     break;
   case TK_CHAR:
     eat(TK_CHAR);
@@ -837,7 +890,7 @@ Type* compileIndexes(Type* arrayType) {
   while (lookAhead->tokenType == SB_LSEL) {
     eat(SB_LSEL);
     type = compileExpression();
-    checkIntType(type);
+    // checkIntType(type);
     checkArrayType(arrayType);
     arrayType = arrayType->elementType;
     eat(SB_RSEL);

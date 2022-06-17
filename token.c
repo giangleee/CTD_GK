@@ -35,6 +35,8 @@ struct {
   {"SWITCH", KW_SWITCH},
   {"CASE", KW_CASE},
   {"DEFAULT", KW_DEFAULT},
+  {"STRING", KW_STRING},
+  {"DOUBLE", KW_DOUBLE},
 };
 
 int keywordEq(char *kw, char *string) {
@@ -68,6 +70,8 @@ char *tokenToString(TokenType tokenType) {
   case TK_NUMBER: return "a number";
   case TK_CHAR: return "a constant char";
   case TK_EOF: return "end of file";
+  case TK_DOUBLE: return "a double number";
+  case TK_STRING: return "a string";
 
   case KW_PROGRAM: return "keyword PROGRAM";
   case KW_CONST: return "keyword CONST";
@@ -92,6 +96,8 @@ char *tokenToString(TokenType tokenType) {
   case KW_SWITCH: return "keyword SWITCH";
   case KW_CASE: return "keyword CASE";
   case KW_DEFAULT: return "keyword DEFAULT";
+  case KW_DOUBLE: return "keyword DOUBLE";
+  case KW_STRING: return "keyword STRING";
 
   case SB_SEMICOLON: return "\';\'";
   case SB_COLON: return "\':\'";

@@ -1,0 +1,17 @@
+program exam;
+var n : integer;
+    s : string;
+    temp : string;
+    check : double;
+    
+function F (n : integer; s: string) : string;
+var idonnow : double;
+begin
+  if n < 0 then F:= " " else F:= F(n-1, s);
+end;
+
+begin
+    check := 1.1;
+    temp := "hello";
+    call writeS(F(10, "hello"));
+end.

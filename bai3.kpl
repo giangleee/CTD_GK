@@ -1,0 +1,7 @@
+Program test;
+   
+Var n : double;
+
+begin
+    n := .12;
+end.

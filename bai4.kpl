@@ -1,0 +1,14 @@
+program exam;
+
+var n : double;
+    s : string;
+
+function F(n: double; s: string) : string;
+begin
+    F  := F(n-1, s);
+end;
+
+begin
+    n := -10.5;
+    call writed(-10.5);
+end.

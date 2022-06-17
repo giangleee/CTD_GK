@@ -18,6 +18,7 @@ void freeReferenceList(ObjectNode *objList);
 SymTab* symtab;
 Type* intType;
 Type* charType;
+Type* doubleType;
 
 /******************* Type utilities ******************************/
 
@@ -30,6 +31,18 @@ Type* makeIntType(void) {
 Type* makeCharType(void) {
   Type* type = (Type*) malloc(sizeof(Type));
   type->typeClass = TP_CHAR;
+  return type;
+} 
+
+Type* makeStringType(void) {
+  Type* type = (Type*) malloc(sizeof(Type));
+  type->typeClass = TP_STRING;
+  return type;
+}
+
+Type* makeDoubleType(void) {
+  Type* type = (Type*) malloc(sizeof(Type));
+  type->typeClass = TP_DOUBLE;
   return type;
 }
 
@@ -63,11 +76,16 @@ int compareType(Type* type1, Type* type2) {
 
 void freeType(Type* type) {
   switch (type->typeClass) {
+  case TP_DOUBLE:
   case TP_INT:
   case TP_CHAR:
     free(type);
     break;
   case TP_ARRAY:
+    freeType(type->elementType);
+    freeType(type);
+    break;
+  case TP_STRING:
     freeType(type->elementType);
     freeType(type);
     break;
@@ -87,6 +105,20 @@ ConstantValue* makeCharConstant(char ch) {
   ConstantValue* value = (ConstantValue*) malloc(sizeof(ConstantValue));
   value->type = TP_CHAR;
   value->charValue = ch;
+  return value;
+}
+
+ConstantValue* makeStringConstant(char *ch) {
+  ConstantValue* value = (ConstantValue*) malloc(sizeof(ConstantValue));
+  value->type = TP_STRING;
+  strcpy(value->stringValue, ch);
+  return value;
+}
+
+ConstantValue* makeDoubleConstant(double db) {
+  ConstantValue* value = (ConstantValue*) malloc(sizeof(ConstantValue));
+  value->type = TP_DOUBLE;
+  value->doubleValue = db;
   return value;
 }
 
@@ -293,8 +325,21 @@ void initSymTab(void) {
   obj = createProcedureObject("WRITELN");
   addObject(&(symtab->globalObjectList), obj);
 
+  obj = createProcedureObject("WRITES");
+  param = createParameterObject("s", PARAM_VALUE, obj);
+  param->paramAttrs->type = makeStringType();
+  addObject(&(obj->procAttrs->paramList),param);
+  addObject(&(symtab->globalObjectList), obj);
+
+  obj = createProcedureObject("WRITED");
+  param = createParameterObject("db", PARAM_VALUE, obj);
+  param->paramAttrs->type = makeDoubleType();
+  addObject(&(obj->procAttrs->paramList),param);
+  addObject(&(symtab->globalObjectList), obj);
+
   intType = makeIntType();
   charType = makeCharType();
+  doubleType = makeDoubleType();
 }
 
 void cleanSymTab(void) {

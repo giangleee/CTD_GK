@@ -79,13 +79,60 @@ Token* readNumber(void) {
   Token *token = makeToken(TK_NUMBER, lineNo, colNo);
   int count = 0;
 
-  while ((currentChar != EOF) && (charCodes[currentChar] == CHAR_DIGIT)) {
+    while ((currentChar != EOF) && (charCodes[currentChar] == CHAR_DIGIT)) {
     token->string[count++] = (char)currentChar;
     readChar();
-  }
+    //TOCHANGE
+    if (charCodes[currentChar] == CHAR_PERIOD) {
+      token->tokenType = TK_DOUBLE;
+      token->string[count++] = (char)currentChar;
+      readChar();
 
+      while ((currentChar != EOF) && (charCodes[currentChar] == CHAR_DIGIT)){
+            token->string[count++] = (char)currentChar;
+            readChar();
+          }
+      break;
+      }
+    }
   token->string[count] = '\0';
-  token->value = atoi(token->string);
+  if (token->tokenType == TK_NUMBER) {
+    token->value = atoi(token->string);
+  } else token->value = atof(token->string);
+  return token;
+}
+
+Token* readString(void) {
+  int count = 0;
+  Token *token = makeToken(TK_STRING, lineNo, colNo);
+  readChar();
+  while (charCodes[currentChar] != CHAR_DOUBLEQUOTE && currentChar != -1)
+  {
+    // Add current character to string
+    token->string[count] = currentChar;
+
+    // Increase string length
+    count++;
+
+    // Get next character
+    readChar();
+  }
+  // End string
+  token->string[count] = '\0';
+
+  // Limit identifier length
+  if (currentChar == -1)
+    printf("\nERR: End of String");
+  else if (count > MAX_IDENT_LEN)
+  {
+    // Announce error
+    printf("\nString too long\n");
+  }
+  readChar();
+  /*else {
+    error(ERR_ENDOFSTRING, lineNo, colNo - count);
+  }*/
+
   return token;
 }
 
@@ -130,13 +177,22 @@ Token* getToken(void) {
   case CHAR_SPACE: skipBlank(); return getToken();
   case CHAR_LETTER: return readIdentKeyword();
   case CHAR_DIGIT: return readNumber();
+  case CHAR_DOUBLEQUOTE: return readString();
   case CHAR_PLUS: 
     token = makeToken(SB_PLUS, lineNo, colNo);
     readChar(); 
     return token;
   case CHAR_MINUS:
-    token = makeToken(SB_MINUS, lineNo, colNo);
-    readChar(); 
+    ln = lineNo;
+    cn = colNo;
+    readChar();
+    if ((currentChar != EOF) && (charCodes[currentChar] == CHAR_MINUS)) {
+      token = makeToken(SB_MINUS, ln, cn);
+      readChar();
+      if (charCodes[currentChar] == CHAR_DIGIT) {
+        readNumber();
+      }
+    } else token = makeToken(SB_MINUS, lineNo, colNo);
     return token;
   case CHAR_TIMES:
     ln = lineNo;
@@ -145,6 +201,9 @@ Token* getToken(void) {
     if ((currentChar != EOF) && (charCodes[currentChar] == CHAR_TIMES)) {
       token = makeToken(SB_POWER, ln, cn);
       readChar();
+      if (charCodes[currentChar] == CHAR_DIGIT) {
+        readNumber();
+      }
     } else token = makeToken(SB_TIMES, lineNo, colNo);
     return token;
   case CHAR_SLASH:
@@ -261,6 +320,8 @@ void printToken(Token *token) {
   case TK_NUMBER: printf("TK_NUMBER(%s)\n", token->string); break;
   case TK_CHAR: printf("TK_CHAR(\'%s\')\n", token->string); break;
   case TK_EOF: printf("TK_EOF\n"); break;
+  case TK_DOUBLE: printf("TK_DOUBLE(%s)\n", token->string); break;
+  case TK_STRING: printf("TK_STRING(%s)\n", token->string); break;
 
   case KW_PROGRAM: printf("KW_PROGRAM\n"); break;
   case KW_CONST: printf("KW_CONST\n"); break;
@@ -285,6 +346,8 @@ void printToken(Token *token) {
   case KW_SWITCH: printf("KW_SWITCH\n"); break;
   case KW_CASE: printf("KW_CASE\n"); break;
   case KW_DEFAULT: printf("KW_DEFAULT\n"); break;
+  case KW_STRING: printf("KW_STRING\n"); break;
+  case KW_DOUBLE: printf("KW_DOUBLE\n"); break;
 
   case SB_SEMICOLON: printf("SB_SEMICOLON\n"); break;
   case SB_COLON: printf("SB_COLON\n"); break;

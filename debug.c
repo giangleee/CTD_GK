@@ -25,6 +25,12 @@ void printType(Type* type) {
     printType(type->elementType);
     printf(")");
     break;
+  case TP_STRING:
+    printf("String");
+    break;
+  case TP_DOUBLE:
+    printf("Double");
+    break;
   }
 }
 
@@ -35,6 +41,12 @@ void printConstantValue(ConstantValue* value) {
     break;
   case TP_CHAR:
     printf("\'%c\'",value->charValue);
+    break;
+  case TP_STRING:
+    printf("\'%s\'",value->stringValue);
+    break;
+  case TP_DOUBLE:
+    printf("\'%f\'",value->doubleValue);
     break;
   default:
     break;
